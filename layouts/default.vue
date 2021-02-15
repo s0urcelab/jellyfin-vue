@@ -147,10 +147,16 @@ export default Vue.extend({
     }),
     searchQuery: {
       get(): string {
-        return this.$store.state.search.query;
+        return this.$route.query.q?.toString();
       },
       set(value: string): void {
-        this.setSearchQuery({ query: value });
+        if (value === '' || !value) {
+          this.$router.push('/');
+        } else if (this.searchQuery) {
+          this.$router.replace({ path: 'search', query: { q: value } });
+        } else {
+          this.$router.push({ path: 'search', query: { q: value } });
+        }
       }
     },
     items(): LayoutButton[] {
@@ -169,12 +175,6 @@ export default Vue.extend({
         this.showNavDrawer({ showNavDrawer: false });
       } else if (!this.$store.state.page.showNavDrawer) {
         this.showNavDrawer({ showNavDrawer: true });
-      }
-    },
-    searchQuery(newQuery: string, oldQuery: string): void {
-      // If neither the old nor the new query are empty, we don't want to move.
-      if (newQuery.trim() !== '' && oldQuery.trim() === '') {
-        this.$router.push({ name: 'search' });
       }
     }
   },
