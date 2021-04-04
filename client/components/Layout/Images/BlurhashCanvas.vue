@@ -13,7 +13,84 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import getPixels from '~/plugins/workers/blurhash.worker';
+import greenlet from 'greenlet';
+import { decode } from 'blurhash';
+
+const isWasmSupported = ((): boolean => {
+  try {
+    if (
+      typeof WebAssembly === 'object' &&
+      typeof WebAssembly.instantiate === 'function'
+    ) {
+      const module = new WebAssembly.Module(
+        Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00)
+      );
+
+      if (module instanceof WebAssembly.Module)
+        return new WebAssembly.Instance(module) instanceof WebAssembly.Instance;
+    }
+  } catch (e) {}
+
+  return false;
+})();
+
+// eslint-disable-next-line no-console
+console.debug(
+  isWasmSupported ? 'WebAssembly is supported' : 'WebAssembly is not supported'
+);
+
+const getJSPixels = greenlet(
+  async (
+    hash: string,
+    width: number,
+    height: number,
+    punch: number
+    // eslint-disable-next-line require-await
+  ): Promise<Uint8ClampedArray> => {
+    try {
+      return decode(hash, width, height, punch);
+    } catch {
+      throw new TypeError(`Blurhash ${hash} is not valid`);
+    }
+  }
+);
+
+const getWasmPixels = greenlet(
+  async (hash: string, width: number, height: number): Promise<Uint8Array> => {
+    const wasmDecode = (await import('blurhash-wasm/blurhash_wasm')).decode;
+
+    try {
+      return wasmDecode(hash, width, height) as Uint8Array;
+    } catch {
+      throw new TypeError(`Blurhash ${hash} is not valid`);
+    }
+  }
+);
+
+/**
+ * Decodes blurhash outside the main thread, in a web worker using greenlet,
+ * using WASM or native JS implementations for decoding based on browser support.
+ *
+ * @param {string} hash - Hash to decode.
+ * @param {number} width - Width of the decoded pixel array
+ * @param {number} height - Height of the decoded pixel array.
+ * @param {number} punch - Contrast of the decoded pixels
+ * @returns {Uint8ClampedArray|Uint8Array} - Returns the decoded pixels in the proxied response by Comlink
+ */
+async function getPixels(
+  hash: string,
+  width: number,
+  height: number,
+  punch: number
+): Promise<Uint8ClampedArray | Uint8Array> {
+  try {
+    return isWasmSupported
+      ? await getWasmPixels(hash, width, height)
+      : await getJSPixels(hash, width, height, punch);
+  } catch {
+    throw new TypeError(`Blurhash ${hash} is not valid`);
+  }
+}
 
 export default Vue.extend({
   props: {
@@ -37,14 +114,14 @@ export default Vue.extend({
   data() {
     return {
       loading: true,
-      pixels: undefined as Uint8ClampedArray | undefined
+      pixels: undefined as Uint8ClampedArray | Uint8Array | undefined
     };
   },
   watch: {
     hash(): void {
       this.$nextTick(() => {
         this.loading = true;
-        this.getPixels();
+        this.setPixels();
       });
     },
     pixels(): void {
@@ -52,7 +129,7 @@ export default Vue.extend({
     }
   },
   mounted() {
-    this.getPixels();
+    this.setPixels();
   },
   methods: {
     draw(): void {
@@ -65,7 +142,9 @@ export default Vue.extend({
         this.loading = false;
       }
     },
-    async getPixels(): Promise<void> {
+    async setPixels(): Promise<void> {
+      const timeStart = window.performance.now();
+
       try {
         this.pixels = await getPixels(
           this.hash,
@@ -77,6 +156,8 @@ export default Vue.extend({
         this.pixels = undefined;
         this.$emit('error');
       }
+
+      console.log(window.performance.now() - timeStart);
     }
   }
 });

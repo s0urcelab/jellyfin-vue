@@ -365,25 +365,6 @@ const config: NuxtConfig = {
         ];
       }
     },
-    extend(
-      config: webpack.Configuration,
-      { isClient }: { isClient: boolean }
-    ): void {
-      if (isClient) {
-        // Web Worker support
-        config.module?.rules.push({
-          test: /\.worker\.(js|ts)$/i,
-          use: [
-            {
-              loader: 'comlink-loader',
-              options: {
-                singleton: true
-              }
-            }
-          ]
-        });
-      }
-    },
     transpile: ['@nuxtjs/auth', 'vee-validate/dist/rules']
   },
 
