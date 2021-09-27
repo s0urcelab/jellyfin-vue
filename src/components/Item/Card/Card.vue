@@ -178,29 +178,25 @@ export default Vue.extend({
         case 'MusicAlbum':
           return `${this.item.AlbumArtist || ''}`;
         case 'Series': {
-          if (this.item.Status === 'Continuing') {
-            return `${this.item.ProductionYear} - ${this.$t('present')}`;
-          } else if (this.item.EndDate) {
-            const endYear = new Date(this.item?.EndDate).toLocaleString(
-              'en-us',
-              { year: 'numeric' }
-            );
+          const firstYear = this.item.ProductionYear || '';
+          const transYear = this.item.EndDate
+            ? new Date(this.item.EndDate).toLocaleString('en-us', {
+                year: 'numeric'
+              })
+            : '';
+          const lastYear =
+            this.item.Status === 'Continuing' ? this.$t('present') : transYear;
 
-            if (this.item.ProductionYear?.toString() === endYear) {
-              return this.item.ProductionYear.toString();
-            }
-
-            return `${this.item.ProductionYear} - ${endYear}`;
+          if (firstYear && lastYear && String(firstYear) !== String(lastYear)) {
+            return `${firstYear} - ${lastYear}`;
           }
 
-          break;
+          return String(lastYear);
         }
         case 'Movie':
         default:
           return `${this.item.ProductionYear ? this.item.ProductionYear : ''}`;
       }
-
-      return '';
     },
     /**
      * Gets a link to be applied to the card title
