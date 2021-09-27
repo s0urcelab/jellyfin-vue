@@ -51,6 +51,7 @@ export default Vue.extend({
   data() {
     return {
       items: [
+        { name: '加入日期', value: 'DateCreated', order: false },
         { name: this.$t('name'), value: 'SortName', order: false },
         { name: this.$t('rating'), value: 'CommunityRating', order: false },
         { name: this.$t('releaseDate'), value: 'PremiereDate', order: false }

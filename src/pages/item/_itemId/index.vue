@@ -32,6 +32,7 @@
               'ml-0': $vuetify.breakpoint.mdAndUp
             }"
           >
+            <direct-play-button class="mr-2" :item="item" />
             <play-button
               class="mr-2"
               :item="item"

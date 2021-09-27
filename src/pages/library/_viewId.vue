@@ -75,7 +75,7 @@ export default Vue.extend({
       itemsCount: 0,
       loading: false,
       viewType: '',
-      sortBy: 'SortName',
+      sortBy: 'DateCreated',
       hasFilters: false,
       isDefaultView: true, // Movie view, not Collection. Music view, not Genres...
       statusFilter: [] as string[],
@@ -299,7 +299,7 @@ export default Vue.extend({
                     !('CollectionType' in this.collectionInfo))
                     ? undefined
                     : true,
-                sortOrder: 'Ascending',
+                sortOrder: 'Descending',
                 filters: this.statusFilter ? this.statusFilter : undefined,
                 genres: this.genresFilter ? this.genresFilter : undefined,
                 years: this.yearsFilter ? this.yearsFilter : undefined,
