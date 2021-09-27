@@ -71,7 +71,7 @@ export default Vue.extend({
 
       return { publicUsers, disclaimer };
     } catch {
-      redirect('/server/select');
+      redirect('/');
     }
   },
   data() {

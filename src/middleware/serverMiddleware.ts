@@ -8,10 +8,12 @@ import { Context } from '@nuxt/types';
  * @returns {void}
  */
 export default function (context: Context): void {
-  if (
-    !context.$axios.defaults.baseURL ||
-    !context.store.state.servers.serverList.length
-  ) {
+  context.store.dispatch(
+    'servers/connectServer',
+    'https://home.src.moe:9000/jellyfin'
+  );
+
+  if (!context.$axios.defaults.baseURL) {
     return context.redirect('/server/add');
   }
 }
