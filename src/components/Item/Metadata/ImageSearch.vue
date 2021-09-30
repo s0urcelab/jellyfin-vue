@@ -60,7 +60,7 @@
             <v-img
               :src="imageFormat(item.Url)"
               :aspect-ratio="ratio"
-              position="top center"
+              position="center center"
               contain
             />
             <div class="text-center text-truncate subtitle-1 mt-2">
@@ -249,9 +249,10 @@ export default Vue.extend({
       this.loading = false;
     },
     imageFormat(url: string): string {
-      return `${
-        this.$axios.defaults.baseURL
-      }/Images/Remote?imageUrl=${encodeURIComponent(url)}`;
+      return url;
+      // return `${
+      //   this.$axios.defaults.baseURL
+      // }/Images/Remote?imageUrl=${encodeURIComponent(url)}`;
     },
     async handleDownload(item: RemoteImageInfo): Promise<void> {
       this.loading = true;
@@ -289,6 +290,7 @@ export default Vue.extend({
 }
 
 .image-results {
+  margin: 0;
   height: 50vh;
   overflow-y: scroll;
 }
