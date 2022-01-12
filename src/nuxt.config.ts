@@ -418,7 +418,7 @@ const config: NuxtConfig = {
     host: '0.0.0.0'
   },
   env: {
-    serverUrl: JSON.stringify(process.env.DEPLOY_SERVER_URL),
+    serverUrl: process.env.DEPLOY_SERVER_URL || '',
   },
 };
 
